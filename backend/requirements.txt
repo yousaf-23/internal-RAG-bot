@@ -1,0 +1,34 @@
+# FastAPI and server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database - PostgreSQL support
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.10  # PostgreSQL adapter
+alembic==1.13.1  # Database migrations
+
+# AI and Vector Store
+openai==1.6.1
+pinecone-client==6.0.0
+langchain==0.1.0
+tiktoken==0.5.2
+
+# Document Processing
+pypdf==3.17.4
+python-docx==1.1.0
+openpyxl==3.1.2
+pandas==2.1.4
+
+# Utilities
+python-dotenv==1.0.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+httpx==0.25.2
+
+# CORS support
+python-jose[cryptography]==3.3.0  # If you need JWT auth later
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
