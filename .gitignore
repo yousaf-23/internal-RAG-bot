@@ -5,13 +5,11 @@ frontend/.env
 
 # Python (backend)
 backend/venv/
+backend\app\__pycache__
+backend\app\api\__pycache__
 backend/__pycache__/
 backend/*.pyc
 backend/.env
-
-# OS files
-.DS_Store
-Thumbs.db
 
 # VS Code settings
 .vscode/
