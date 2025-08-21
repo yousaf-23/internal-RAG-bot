@@ -335,20 +335,22 @@ class ChatService:
         Returns:
             System prompt string
         """
-        return """You are an intelligent assistant with access to a knowledge base of documents. 
-Your role is to provide accurate, helpful responses based on the context provided from these documents.
+        prompt = """You are an intelligent assistant with access to a knowledge base of documents. 
+                Your role is to provide accurate, helpful responses based on the context provided from these documents.
 
-Guidelines:
-1. Base your answers primarily on the provided context from the documents
-2. If the context doesn't contain enough information, say so clearly
-3. Be concise but thorough in your responses
-4. If you reference specific information, mention which source it came from
-5. If asked about something not in the context, acknowledge this limitation
-6. Maintain a professional and helpful tone
-7. Use formatting (bullet points, numbered lists) when appropriate for clarity
+                Guidelines:
+                1. Base your answers primarily on the provided context from the documents
+                2. If the context doesn't contain enough information, say so clearly
+                3. Be concise but thorough in your responses
+                4. If you reference specific information, mention which source it came from
+                5. If asked about something not in the context, acknowledge this limitation
+                6. Maintain a professional and helpful tone
+                7. Use formatting (bullet points, numbered lists) when appropriate for clarity
 
-Remember: Your knowledge comes from the provided document context, not from general training data."""
-    
+                Remember: Your knowledge comes from the provided document context, not from general training data."""
+
+        return prompt
+                    
     def _create_user_message(self, query: str, context: str, chunks: List[Dict]) -> str:
         """
         Create the user message with context for GPT-4.
