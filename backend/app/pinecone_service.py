@@ -65,7 +65,7 @@ class PineconeService:
         
         # Initialize attributes
         self.index = None
-        self.index_name = settings.pinecone_index_name  # Default: "rag-documents"
+        self.index_name = settings.pinecone_index_name  # Default: "internal-rag-index"
         self.dimension = settings.embedding_dimension  # Default: 1536
         
         # Check API key
@@ -166,7 +166,8 @@ class PineconeService:
         self, 
         document_id: str, 
         chunks: List[Dict[str, Any]], 
-        embeddings: List[List[float]]
+        embeddings: List[List[float]],
+        project_namespace: str
     ) -> Dict[str, Any]:
         """
         Store document chunks and their embeddings in Pinecone.
@@ -245,7 +246,7 @@ class PineconeService:
                     batch = vectors[i:i + batch_size]
                     
                     # Upsert batch
-                    response = self.index.upsert(vectors=batch)
+                    response = self.index.upsert(vectors=batch, namespace=project_namespace)
                     
                     total_upserted += response.upserted_count
                     print(f"  Batch {i//batch_size + 1}: Upserted {response.upserted_count} vectors")
@@ -289,8 +290,9 @@ class PineconeService:
         self, 
         query_embedding: List[float], 
         top_k: int = 5,
-        filter: Optional[Dict] = None,
-        include_metadata: bool = True
+        # filter: Optional[Dict] = None,
+        include_metadata: bool = True,
+        project_namespace: str = None
     ) -> List[Dict[str, Any]]:
         """
         Search for similar vectors in Pinecone.
@@ -300,6 +302,7 @@ class PineconeService:
             top_k: Number of results to return
             filter: Optional metadata filter
             include_metadata: Whether to include metadata in results
+            project_namespace: Namespace to search within (project ID)
             
         Returns:
             List of search results with scores and metadata
@@ -316,9 +319,10 @@ class PineconeService:
                 vector=query_embedding,
                 top_k=top_k,
                 filter=filter,
-                include_metadata=include_metadata
+                include_metadata=include_metadata,
+                namespace=project_namespace
             )
-            
+
             # Process results
             search_results = []
             for match in results.matches:

@@ -238,7 +238,8 @@ async def process_document_background(document_id: str, file_path: str, db: Sess
                         pinecone_result = pinecone_service.upsert_embeddings(
                             document_id=document_id,
                             chunks=chunks,
-                            embeddings=embeddings
+                            embeddings=embeddings,
+                            project_namespace=document.project_id  # Use project ID as namespace
                         )
                         
                         if pinecone_result['success']:

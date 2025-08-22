@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     # Pinecone Configuration
     pinecone_api_key: str = Field(default="", env="PINECONE_API_KEY")
     pinecone_environment: str = Field(default="", env="PINECONE_ENVIRONMENT")
-    pinecone_index_name: str = Field(default="rag-documents", env="PINECONE_INDEX_NAME")
+    pinecone_index_name: str = Field(default="internal-rag-index", env="PINECONE_INDEX_NAME")
     
     # Database Configuration
     database_url: str = Field(
@@ -206,7 +206,7 @@ except Exception as e:
         openai_model = "gpt-4-turbo-preview"
         pinecone_api_key = ""
         pinecone_environment = ""
-        pinecone_index_name = "rag-documents"
+        pinecone_index_name = "internal-rag-index"
         database_url = "postgresql://rag_user:rag_password123@localhost:5432/rag_database"
         app_name = "Internal RAG Bot"
         app_version = "1.0.0"

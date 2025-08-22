@@ -344,6 +344,10 @@ class EmbeddingsService:
         
         return embeddings
     
+# ============================================================================
+# UTILITY FUNCTIONS FOR TESTING
+# ============================================================================
+
     def estimate_cost(self, texts: List[str]) -> Dict[str, Any]:
         """
         Estimate the cost of generating embeddings for given texts.
@@ -369,10 +373,6 @@ class EmbeddingsService:
             'model': self.embedding_model,
             'price_per_1k_tokens': self.cost_per_1k_tokens
         }
-
-# ============================================================================
-# UTILITY FUNCTIONS FOR TESTING
-# ============================================================================
 
 def test_embeddings_service():
     """

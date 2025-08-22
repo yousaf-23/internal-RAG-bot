@@ -133,7 +133,7 @@ class ChatService:
         
         try:
             # Step 1: Generate embedding for the query
-            print("[ChatService] Generating query embedding...")
+            print("\n[ChatService] Generating query embedding...")
             query_embedding = self.embeddings_service.generate_embedding(query)
             
             if not query_embedding:
@@ -143,17 +143,18 @@ class ChatService:
             # Step 2: Search Pinecone for similar chunks
             print(f"[ChatService] Searching Pinecone for top {top_k} chunks...")
             
-            # Build filter if project_id is provided
-            filter_dict = None
-            if project_id:
-                filter_dict = {'project_id': project_id}
+            # # Build filter if project_id is provided
+            # filter_dict = None
+            # if project_id:
+            #     filter_dict = {'project_id': project_id}
             
             # Perform search
             search_results = self.pinecone_service.search(
                 query_embedding=query_embedding,
                 top_k=top_k,
-                filter=filter_dict,
-                include_metadata=True
+                # filter=filter_dict,
+                include_metadata=True,
+                project_namespace=project_id 
             )
             
             print(f"[ChatService] ✅ Found {len(search_results)} relevant chunks")
