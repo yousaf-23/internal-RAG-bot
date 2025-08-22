@@ -1,11 +1,12 @@
 // File: frontend/src/components/ProjectPanel/ProjectPanel.tsx
 // Purpose: Left sidebar for project management and file uploads
 
-import React, { useState } from 'react';
+import React, { use, useState , useEffect} from 'react';
 import { Plus, Folder, Upload, Trash2, FileText } from 'lucide-react';
 import { Project, Document } from '../../types';
 import Button from '../common/Button';
 import FileUploader from './FileUploader';
+import { AddProjects, getProjectsQuery } from '../../services/useProjects';
 
 interface ProjectPanelProps {
   projects: Project[];
@@ -15,6 +16,7 @@ interface ProjectPanelProps {
   onProjectCreate: (name: string, description?: string) => void;
   onProjectDelete: (projectId: string) => void;
   onFileUpload: (files: File[], projectId: string) => void;
+  fetchProjects: () => void;
 }
 
 const ProjectPanel: React.FC<ProjectPanelProps> = ({
@@ -24,28 +26,38 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
   onProjectSelect,
   onProjectCreate,
   onProjectDelete,
-  onFileUpload
+  onFileUpload,
+  fetchProjects
 }) => {
-  // Local state for the new project form
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDescription, setNewProjectDescription] = useState('');
 
-  // Handle project creation
-  const handleCreateProject = () => {
-    if (newProjectName.trim()) {
-      onProjectCreate(newProjectName, newProjectDescription);
-      // Reset form
-      setNewProjectName('');
-      setNewProjectDescription('');
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: ''
+  });
+
+
+  const handleCreateProject = async() => {
+    if (newProject.name.trim()) {
+      // onProjectCreate(newProject.name, newProject.description);
+      const response = await AddProjects(newProject);
+      if (response) {
+        console.log('Project created successfully:', response);
+        fetchProjects(); 
+      }
+      setNewProject({ name: '', description: '' });
       setIsCreatingProject(false);
     }
   };
 
-  // Filter documents for selected project
-  const projectDocuments = selectedProject 
-    ? documents.filter(doc => doc.projectId === selectedProject.id)
-    : [];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewProject(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 h-full flex flex-col">
@@ -70,15 +82,17 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
           <input
             type="text"
             placeholder="Project name"
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
+            name="name"
+            value={newProject.name}
+            onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 font-poppins focus:outline-none focus:border-primary"
             autoFocus
           />
           <textarea
             placeholder="Description (optional)"
-            value={newProjectDescription}
-            onChange={(e) => setNewProjectDescription(e.target.value)}
+            name="description"
+            value={newProject.description}
+            onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 font-poppins resize-none focus:outline-none focus:border-primary"
             rows={2}
           />
@@ -96,8 +110,7 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
               size="small"
               onClick={() => {
                 setIsCreatingProject(false);
-                setNewProjectName('');
-                setNewProjectDescription('');
+                setNewProject({ name: '', description: '' });
               }}
               className="flex-1"
             >
@@ -126,7 +139,7 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
                 <div className="flex items-center space-x-2">
                   <Folder 
                     size={18} 
-                    className={selectedProject?.id === project.id ? 'text-primary' : 'text-gray-500'}
+                    className={selectedProject?.id === project.id ? 'text-primary' : 'text-gray-500'} 
                   />
                   <span className="font-medium text-gray-800">{project.name}</span>
                 </div>
@@ -144,7 +157,7 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
                 <p className="text-xs text-gray-500 mt-1 ml-6">{project.description}</p>
               )}
               <p className="text-xs text-gray-400 mt-1 ml-6">
-                {project.fileCount} file{project.fileCount !== 1 ? 's' : ''}
+                {project.file_count} file{project.file_count !== 1 ? 's' : ''}
               </p>
             </div>
           ))}
@@ -173,9 +186,9 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
           />
 
           {/* Documents List */}
-          {projectDocuments.length > 0 && (
+          {documents.length > 0 && (
             <div className="mt-3 max-h-40 overflow-y-auto">
-              {projectDocuments.map((doc) => (
+              {documents.map((doc) => (
                 <div key={doc.id} className="flex items-center space-x-2 py-1">
                   <FileText size={14} className="text-gray-400" />
                   <span className="text-xs text-gray-600 truncate flex-1">{doc.filename}</span>
@@ -195,5 +208,6 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
     </div>
   );
 };
+
 
 export default ProjectPanel;
