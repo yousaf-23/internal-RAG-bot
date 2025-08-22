@@ -318,7 +318,7 @@ class PineconeService:
             results = self.index.query(
                 vector=query_embedding,
                 top_k=top_k,
-                filter=filter,
+                # filter=filter,
                 include_metadata=include_metadata,
                 namespace=project_namespace
             )
