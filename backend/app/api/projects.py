@@ -269,7 +269,7 @@ async def delete_project(
         
         print(f"[API] Deleted project from DB: {project_name}")
 
-        # Deleteing project namespace from Pinecone
+        # Deleteing project namespace from Pinecone.
         pinecone_service = PineconeService()
 
         pinecone_service.delete_namespace(namespace=project_id)
