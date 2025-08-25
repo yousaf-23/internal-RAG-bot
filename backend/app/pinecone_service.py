@@ -349,6 +349,35 @@ class PineconeService:
             print(f"[PineconeService] ❌ Search error: {e}")
             return []
     
+    def delete_namespace(self, namespace: str) -> bool:
+        """
+        Delete all vectors in a specific namespace (e.g., project).
+        
+        Args:
+            namespace: The namespace to delete  
+        
+        Returns:
+            True if successful, False otherwise
+        """
+
+        print(f"\n[PineconeService] Deleting all vectors in namespace: {namespace}")
+        
+        if not self.index:
+            print("[PineconeService] ❌ Index not initialized!")
+            return False
+        
+        try:
+            # Delete all vectors in the specified namespace
+            self.index.delete(delete_all=True, namespace=namespace)
+            
+            print(f"[PineconeService] ✅ Deleted all vectors in namespace {namespace}")
+            return True
+            
+        except Exception as e:
+            print(f"[PineconeService] ❌ Delete error: {e}")
+            return False
+        
+
     def delete_document(self, document_id: str) -> bool:
         """
         Delete all vectors for a specific document.
