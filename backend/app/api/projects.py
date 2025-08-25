@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import uuid
 from datetime import datetime
+from app.pinecone_service import PineconeService
+
 
 # Import our database models and schemas
 from app.database import get_db, Project, Document
@@ -265,7 +267,14 @@ async def delete_project(
         db.delete(project)
         db.commit()
         
-        print(f"[API] Deleted project: {project_name}")
+        print(f"[API] Deleted project from DB: {project_name}")
+
+        # Deleteing project namespace from Pinecone
+        pinecone_service = PineconeService()
+
+        pinecone_service.delete_namespace(namespace=project_id)
+
+        print(f"[API] Deleted Project '{project_name}' entirely")
         
         return SuccessResponse(
             success=True,

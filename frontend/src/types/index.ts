@@ -9,7 +9,7 @@ export interface Project {
   description?: string;           // Optional description (? means optional)
   createdAt: string;             // ISO timestamp when created
   updatedAt: string;             // ISO timestamp when last modified
-  fileCount: number;             // Number of files in this project
+  file_count: number;             // Number of files in this project
 }
 
 // Document/File type - represents an uploaded file

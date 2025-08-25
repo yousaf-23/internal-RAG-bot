@@ -13,9 +13,11 @@ interface ChatPanelProps {
   messages: ChatMessage[];
   isLoading: boolean;
   selectedProjectName?: string;
+  selectedProjectId: string;
   onSendMessage: (message: string) => void;
   onSourceClick: (sources: Source[]) => void;
   setMessages: any
+  setIsLoading:any
 }
 
 const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -24,7 +26,9 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   selectedProjectName,
   onSendMessage,
   onSourceClick,
-  setMessages
+  setMessages,
+  setIsLoading,
+  selectedProjectId
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,25 +44,27 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       const payload = {
         include_sources: true,
         max_chunks: 5,
-        project_id: "proj_2530c87e1f30",
+        project_id:selectedProjectId ,
         query: inputMessage
       }
       setInputMessage('');
-      // const response = await postChatQuery(payload);
-      // if (response.success) {
-      //   const message = {
-      //     id: response.conversation_id, // Use the conversation_id as the unique ID
-      //     projectId: response.message_metadata.project_id, // Use project_id from message_metadata
-      //     content: response.response, // Content from the response field
-      //     role: 'assistant', // Role is set to 'assistant' since the response is from the assistant
-      //     timestamp: response.message_metadata.timestamp, // Timestamp from message_metadata
-      //     sources: response.sources // Optional sources, if available
-      //   };
-      //   setMessages(message)
-      //   setInputMessage('');
-      // } else {
-      //   console.error('Failed to send message');
-      // }
+      const response = await postChatQuery(payload);
+      if (response.success) {
+        const message = {
+          id: response.conversation_id, 
+          projectId: response.message_metadata.project_id, // Use project_id from message_metadata
+          content: response.response, // Content from the response field
+          role: 'assistant', // Role is set to 'assistant' since the response is from the assistant
+          timestamp: response.message_metadata.timestamp, // Timestamp from message_metadata
+          sources: response.sources // Optional sources, if available
+        };
+        setMessages((prevMessages: any) => [...prevMessages, message]);
+        setInputMessage('');
+        setIsLoading(false);
+      } else {
+        console.error('Failed to send message');
+      }
+      setIsLoading(false);
     }
   };
 console.log("ChatPanel messages:", messages);

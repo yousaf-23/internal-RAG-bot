@@ -1,12 +1,15 @@
 // File: frontend/src/App.tsx
 // Purpose: Main application component that orchestrates all panels
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './App.css';
 import ProjectPanel from './components/ProjectPanel/ProjectPanel';
 import ChatPanel from './components/ChatPanel/ChatPanel';
 import SourcePanel from './components/SourcePanel/SourcePanel';
 import { Project, Document, ChatMessage, Source } from './types';
+import { getProjectsQuery, DeleteProjects } from './services/useProjects';
+import { getProjectDocumentsQuery , uploadDocumentQuery } from './services/useProjectDocuments';
+import { getChatHistory } from './services/useChat';
 
 function App() {
   // Global application state
@@ -18,6 +21,60 @@ function App() {
   const [isSourcePanelOpen, setIsSourcePanelOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+console.log("messages:", messages);
+
+      useEffect(() => {
+      fetchProjects();
+      }, []);
+
+      useEffect(() => {
+        if (selectedProject) {
+        fetchProjectDocuments(selectedProject?.id || '');
+        fetchChatHistory(selectedProject?.id || '');
+        }
+      }, [selectedProject]);
+
+
+    const fetchProjects = async () => {
+      const response = await getProjectsQuery();
+      if (response) {
+       setProjects(response);
+      } else {
+        console.error('Failed to fetch projects');
+      }
+    };
+
+    const fetchProjectDocuments = async (projectId: string) => {
+      try {
+        const response = await getProjectDocumentsQuery(projectId);
+        if (response) {
+          setDocuments(response);
+        } else {
+          console.error('Failed to fetch project documents');
+        }
+      } catch (error) {
+        console.error('Error fetching project documents:', error);
+      } 
+    }
+
+    const fetchChatHistory = async (projectId: string) => {
+      try {
+        const response = await getChatHistory({ project_id: projectId });
+        console.log("Chat history response:", response);
+        
+        if (response) {
+          const allMessages = response.flatMap((conversation: { messages: any; }) => conversation.messages);
+          setMessages(allMessages);
+        } else {
+          console.error('Failed to fetch chat history');
+        }
+      }
+      catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    }
+    console.log("App messages:", messages);
+    
   // Handle project creation
   const handleProjectCreate = useCallback((name: string, description?: string) => {
     const newProject: Project = {
@@ -26,7 +83,7 @@ function App() {
       description,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      fileCount: 0
+      file_count: 0
     };
     
     setProjects(prev => [...prev, newProject]);
@@ -46,7 +103,7 @@ function App() {
     setProjects(prev => prev.filter(p => p.id !== projectId));
     setDocuments(prev => prev.filter(d => d.projectId !== projectId));
     setMessages(prev => prev.filter(m => m.projectId !== projectId));
-    
+    const response = DeleteProjects({project_id:projectId});
     if (selectedProject?.id === projectId) {
       setSelectedProject(null);
     }
@@ -55,12 +112,10 @@ function App() {
 
   // Handle file upload
   const handleFileUpload = useCallback((files: File[], projectId: string) => {
-    console.log('[App] Uploading files:', files.map(f => f.name));
-    
-    // Create document records
+
     const newDocuments: Document[] = files.map(file => ({
       id: `doc-${Date.now()}-${Math.random()}`,
-      projectId,
+      projectId:projectId,
       filename: file.name,
       fileType: file.name.split('.').pop()?.toLowerCase() as Document['fileType'],
       uploadedAt: new Date().toISOString(),
@@ -68,12 +123,26 @@ function App() {
       status: 'processing'
     }));
 
+    const formData = new FormData();
+    formData.append('file', files[0]); // Append the file
+    formData.append('projectId', projectId); // Add other metadata
+    formData.append('filename', files[0].name);
+    formData.append('fileType', files[0].name.split('.').pop()?.toLowerCase() || 'unknown');
+    formData.append('size', files[0].size.toString());
+    formData.append('uploadedAt', new Date().toISOString());
+    formData.append('status', 'processing');
+
+    const response = uploadDocumentQuery({ projectId,formData});
+    if (!response) {    
+      console.error('Failed to upload documents');
+      return;
+    }
     setDocuments(prev => [...prev, ...newDocuments]);
     
     // Update project file count
     setProjects(prev => prev.map(p => 
       p.id === projectId 
-        ? { ...p, fileCount: p.fileCount + files.length, updatedAt: new Date().toISOString() }
+        ? { ...p, file_count: p.file_count + files.length, updatedAt: new Date().toISOString() }
         : p
     ));
 
@@ -90,7 +159,7 @@ function App() {
   // Handle sending a message
   const handleSendMessage = useCallback(async (content: string) => {
     if (!selectedProject) return;
-
+   setIsLoading(true);
     // Add user message
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -101,30 +170,6 @@ function App() {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
-
-    // Simulate API call (in production, this would call your FastAPI backend)
-    setTimeout(() => {
-      const assistantMessage: ChatMessage = {
-        id: `msg-${Date.now()}-assistant`,
-        projectId: selectedProject.id,
-        content: `This is a simulated response for: "${content}"\n\nIn production, this will:\n1. Send your query to the FastAPI backend\n2. Search through documents using Pinecone vector database\n3. Generate an answer using OpenAI GPT-4\n4. Return relevant source chunks`,
-        role: 'assistant',
-        timestamp: new Date().toISOString(),
-        sources: [
-          {
-            documentId: 'doc-1',
-            documentName: 'Example Document.pdf',
-            chunk: 'This is a relevant excerpt from your document that answers the question. In production, this will be actual content from your uploaded files.',
-            pageNumber: 5,
-            relevanceScore: 0.92
-          }
-        ]
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1500);
   }, [selectedProject]);
 
   // Handle source click
@@ -144,16 +189,19 @@ function App() {
         onProjectCreate={handleProjectCreate}
         onProjectDelete={handleProjectDelete}
         onFileUpload={handleFileUpload}
+        fetchProjects={fetchProjects}
       />
 
       {/* Middle Panel - Chat */}
       <ChatPanel
-        messages={messages?.filter(m => m.projectId === selectedProject?.id)}
+        messages={messages}
         isLoading={isLoading}
         selectedProjectName={selectedProject?.name}
+        selectedProjectId={selectedProject?.id || ''}
         onSendMessage={handleSendMessage}
         onSourceClick={handleSourceClick}
         setMessages={setMessages}
+        setIsLoading={setIsLoading}
       />
 
       {/* Right Panel - Sources (conditional) */}
