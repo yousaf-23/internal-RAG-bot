@@ -26,7 +26,15 @@ class Settings(BaseSettings):
     # OpenAI Configuration
     openai_api_key: str = Field(default="", env="OPENAI_API_KEY")
     openai_model: str = Field(default="gpt-4-turbo-preview", env="OPENAI_MODEL")
-    
+
+    # Embedding Configuration
+    embedding_model: str = Field(default="text-embedding-3-small", env="EMBEDDING_MODEL")
+    embedding_dimension: int = Field(default=1536, env="EMBEDDING_DIMENSION")
+
+    # Document Processing Configuration
+    chunk_size: int = Field(default=1000, env="CHUNK_SIZE")
+    chunk_overlap: int = Field(default=200, env="CHUNK_OVERLAP")
+
     # Pinecone Configuration
     pinecone_api_key: str = Field(default="", env="PINECONE_API_KEY")
     pinecone_environment: str = Field(default="", env="PINECONE_ENVIRONMENT")
@@ -54,14 +62,6 @@ class Settings(BaseSettings):
         default="pdf,docx,doc,xlsx,xls,txt", 
         alias="ALLOWED_EXTENSIONS"  # This maps ALLOWED_EXTENSIONS env var to allowed_extensions_str field
     )
-    
-    # Document Processing Configuration
-    chunk_size: int = Field(default=1000, env="CHUNK_SIZE")
-    chunk_overlap: int = Field(default=200, env="CHUNK_OVERLAP")
-    
-    # Embedding Configuration
-    embedding_model: str = Field(default="text-embedding-3-small", env="EMBEDDING_MODEL")
-    embedding_dimension: int = Field(default=1536, env="EMBEDDING_DIMENSION")
     
     class Config:
         """Pydantic configuration"""

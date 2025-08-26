@@ -43,10 +43,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       onSendMessage(inputMessage);
       const payload = {
         include_sources: true,
-        max_chunks: 5,
+        max_chunks: process.env.REACT_APP_NUM_CHUNKS ? parseInt(process.env.REACT_APP_NUM_CHUNKS) : 5,
         project_id:selectedProjectId ,
         query: inputMessage
       }
+
       setInputMessage('');
       const response = await postChatQuery(payload);
       if (response.success) {
