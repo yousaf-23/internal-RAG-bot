@@ -10,6 +10,7 @@ interface LoadingSpinnerProps {
   size?: 'small' | 'medium' | 'large';  // Size of the spinner
   color?: string;                        // Color (defaults to primary)
   message?: string;                      // Optional text below spinner
+  darkMode?: boolean;                   // Dark mode flag
 }
 
 // Functional Component using TypeScript
@@ -17,10 +18,11 @@ interface LoadingSpinnerProps {
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
   size = 'medium',        // Default value if not provided
   color = 'primary',      // Default to primary color
-  message                 // No default (optional)
+  message,                 // No default (optional)
+  darkMode = false        // Default to false (light mode)
 }) => {
   // Debug: Log when component renders (remove in production)
-  console.log('[LoadingSpinner] Rendering with:', { size, color, message });
+  console.log('[LoadingSpinner] Rendering with:', { size, color, message, darkMode });
 
   // Map size prop to Tailwind CSS classes
   // This object acts like a dictionary/lookup table
@@ -40,8 +42,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           animate-spin 
           rounded-full 
           border-2 
-          border-gray-300 
-          border-t-primary
+          ${darkMode ? 'border-gray-700 border-t-primary' : 'border-gray-300 border-t-primary'}
         `}
         // aria-label helps screen readers understand this is a loading indicator
         aria-label="Loading..."
@@ -49,7 +50,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       
       {/* Conditional rendering: Only show message if it exists */}
       {message && (
-        <p className="text-sm text-gray-600 font-poppins animate-pulse">
+        <p className={`text-sm font-poppins animate-pulse ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           {message}
         </p>
       )}

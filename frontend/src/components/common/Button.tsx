@@ -12,6 +12,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;        // Shows spinner instead of text when true
   icon?: React.ReactNode;   // Optional icon component
   children: React.ReactNode; // Button text/content (required)
+  darkMode?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -22,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   children,                 // Button content
   className = '',           // Additional CSS classes
   disabled,                 // Inherited from HTMLButtonElement
+  darkMode = false,
   ...props                  // Rest of the HTML button props
 }) => {
   // Debug: Track button renders and props
@@ -30,10 +32,18 @@ const Button: React.FC<ButtonProps> = ({
   // Style mappings for different button variants
   // Each variant has different colors for different purposes
   const variantClasses = {
-    primary: 'bg-primary hover:bg-primary-dark text-white',      // Main actions
-    secondary: 'bg-gray-600 hover:bg-gray-700 text-white',       // Secondary actions
-    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white', // Ghost button
-    danger: 'bg-red-600 hover:bg-red-700 text-white'             // Destructive actions
+    primary: darkMode
+      ? 'bg-primary hover:bg-primary-dark text-white'
+      : 'bg-primary hover:bg-primary-dark text-white',
+    secondary: darkMode
+      ? 'bg-gray-700 hover:bg-gray-600 text-white'
+      : 'bg-gray-600 hover:bg-gray-700 text-white',
+    outline: darkMode
+      ? 'border-2 border-primary text-primary hover:bg-primary hover:text-white bg-transparent'
+      : 'border-2 border-primary text-primary hover:bg-primary hover:text-white',
+    danger: darkMode
+      ? 'bg-red-700 hover:bg-red-800 text-white'
+      : 'bg-red-600 hover:bg-red-700 text-white'
   };
 
   // Size mappings control padding and text size

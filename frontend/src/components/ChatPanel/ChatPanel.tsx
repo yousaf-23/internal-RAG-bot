@@ -2,7 +2,7 @@
 // Purpose: Central chat interface for document Q&A
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Moon, Sun } from 'lucide-react';
 import { ChatMessage, Source } from '../../types';
 import Button from '../common/Button';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -18,6 +18,8 @@ interface ChatPanelProps {
   onSourceClick: (sources: Source[]) => void;
   setMessages: any
   setIsLoading:any
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -28,7 +30,9 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onSourceClick,
   setMessages,
   setIsLoading,
-  selectedProjectId
+  selectedProjectId,
+  darkMode,
+  onToggleDarkMode,
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -78,23 +82,33 @@ console.log("ChatPanel messages:", messages);
   };
 
   return (
-    <div className="flex-1 bg-white flex flex-col h-full">
+    <div className={`flex-1 flex flex-col h-full ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-primary to-primary-dark">
-        <h2 className="text-lg font-semibold text-white flex items-center space-x-2">
-          <Bot size={24} />
-          <span>Document Assistant</span>
-          {selectedProjectName && (
-            <span className="text-sm opacity-80">• {selectedProjectName}</span>
-          )}
-        </h2>
-        <p className="text-xs text-white opacity-80 mt-1">
-          Ask questions about your uploaded documents
-        </p>
+      <div className={`p-4 border-b flex justify-between items-center ${darkMode ? 'border-gray-800 bg-gradient-to-r from-gray-900 to-gray-800' : 'border-gray-200 bg-gradient-to-r from-primary to-primary-dark'}`}>
+        <div>
+          <h2 className={`text-lg font-semibold flex items-center space-x-2 ${darkMode ? 'text-white' : 'text-white'}`}>
+            <Bot size={24} />
+            <span>Document Assistant</span>
+            {selectedProjectName && (
+              <span className="text-sm opacity-80">• {selectedProjectName}</span>
+            )}
+          </h2>
+          <p className={`text-xs opacity-80 mt-1 ${darkMode ? 'text-gray-300' : 'text-white'}`}>
+            Ask questions about your uploaded documents
+          </p>
+        </div>
+        <Button
+          variant={darkMode ? 'secondary' : 'outline'}
+          size="small"
+          onClick={onToggleDarkMode}
+          className="ml-4"
+          icon={darkMode ? <Sun size={16} /> : <Moon size={16} />}
+        >
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </Button>
       </div>
-
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
             <Bot size={64} className="mb-4" />
@@ -112,6 +126,7 @@ console.log("ChatPanel messages:", messages);
                 key={message.id}
                 message={message}
                 onSourceClick={onSourceClick}
+                darkMode={darkMode}
               />
             ))}
 
@@ -130,9 +145,8 @@ console.log("ChatPanel messages:", messages);
           </>
         )}
       </div>
-
       {/* Input Area */}
-      <div className="border-t border-gray-200 p-4">
+      <div className={`${darkMode ? 'border-t border-gray-800 bg-gray-900' : 'border-t border-gray-200'} p-4`}>
         <div className="flex space-x-2">
           <textarea
             value={inputMessage}
@@ -141,7 +155,7 @@ console.log("ChatPanel messages:", messages);
             placeholder={selectedProjectName
               ? "Ask a question about your documents..."
               : "Select a project first..."}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg resize-none font-poppins focus:outline-none focus:border-primary"
+            className={`flex-1 px-4 py-2 border rounded-lg resize-none font-poppins focus:outline-none ${darkMode ? 'bg-gray-800 border-gray-700 text-white focus:border-primary' : 'border-gray-300 focus:border-primary'}`}
             rows={2}
             disabled={isLoading || !selectedProjectName}
           />
@@ -155,8 +169,7 @@ console.log("ChatPanel messages:", messages);
             Send
           </Button>
         </div>
-
-        <p className="text-xs text-gray-400 mt-2">
+        <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>

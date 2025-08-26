@@ -20,8 +20,9 @@ function App() {
   const [currentSources, setCurrentSources] = useState<Source[]>([]);
   const [isSourcePanelOpen, setIsSourcePanelOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
-console.log("messages:", messages);
+  console.log("messages:", messages);
 
       useEffect(() => {
       fetchProjects();
@@ -178,38 +179,46 @@ console.log("messages:", messages);
     setIsSourcePanelOpen(true);
   }, []);
 
+  const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
+
   return (
-    <div className="flex h-screen bg-gray-100 font-poppins">
-      {/* Left Panel - Projects */}
-      <ProjectPanel
-        projects={projects}
-        selectedProject={selectedProject}
-        documents={documents}
-        onProjectSelect={handleProjectSelect}
-        onProjectCreate={handleProjectCreate}
-        onProjectDelete={handleProjectDelete}
-        onFileUpload={handleFileUpload}
-        fetchProjects={fetchProjects}
-      />
+    <div className={darkMode ? 'bg-gray-900 text-white min-h-screen' : 'bg-white text-gray-900 min-h-screen'}>
+      <div className="flex h-screen">
+        {/* Left Panel - Projects */}
+        <ProjectPanel
+          projects={projects}
+          selectedProject={selectedProject}
+          documents={documents}
+          onProjectSelect={handleProjectSelect}
+          onProjectCreate={handleProjectCreate}
+          onProjectDelete={handleProjectDelete}
+          onFileUpload={handleFileUpload}
+          fetchProjects={fetchProjects}
+          darkMode={darkMode}
+        />
 
-      {/* Middle Panel - Chat */}
-      <ChatPanel
-        messages={messages}
-        isLoading={isLoading}
-        selectedProjectName={selectedProject?.name}
-        selectedProjectId={selectedProject?.id || ''}
-        onSendMessage={handleSendMessage}
-        onSourceClick={handleSourceClick}
-        setMessages={setMessages}
-        setIsLoading={setIsLoading}
-      />
+        {/* Middle Panel - Chat */}
+        <ChatPanel
+          messages={messages}
+          isLoading={isLoading}
+          selectedProjectName={selectedProject?.name}
+          selectedProjectId={selectedProject?.id || ''}
+          onSendMessage={handleSendMessage}
+          onSourceClick={handleSourceClick}
+          setMessages={setMessages}
+          setIsLoading={setIsLoading}
+          darkMode={darkMode}
+          onToggleDarkMode={handleToggleDarkMode}
+        />
 
-      {/* Right Panel - Sources (conditional) */}
-      <SourcePanel
-        sources={currentSources}
-        isOpen={isSourcePanelOpen}
-        onClose={() => setIsSourcePanelOpen(false)}
-      />
+        {/* Right Panel - Sources (conditional) */}
+        <SourcePanel
+          sources={currentSources}
+          isOpen={isSourcePanelOpen}
+          onClose={() => setIsSourcePanelOpen(false)}
+          darkMode={darkMode}
+        />
+      </div>
     </div>
   );
 }

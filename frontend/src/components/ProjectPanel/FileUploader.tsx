@@ -8,9 +8,10 @@ import { Upload, File } from 'lucide-react';
 interface FileUploaderProps {
   projectId: string;
   onFileUpload: (files: File[], projectId: string) => void;
+  darkMode?: boolean;
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({ projectId, onFileUpload }) => {
+const FileUploader: React.FC<FileUploaderProps> = ({ projectId, onFileUpload, darkMode }) => {
   // Handle file drop - useCallback prevents function recreation on each render
   const onDrop = useCallback((acceptedFiles: File[]) => {
     console.log('[FileUploader] Files dropped:', acceptedFiles.map(f => f.name));
@@ -37,24 +38,25 @@ const FileUploader: React.FC<FileUploaderProps> = ({ projectId, onFileUpload }) 
         border-2 border-dashed rounded-lg p-4
         transition-all cursor-pointer
         ${isDragActive 
-          ? 'border-primary bg-primary bg-opacity-5' 
-          : 'border-gray-300 hover:border-primary hover:bg-gray-50'
+          ? (darkMode ? 'border-primary bg-primary bg-opacity-10' : 'border-primary bg-primary bg-opacity-5') 
+          : (darkMode ? 'border-gray-700 hover:border-primary hover:bg-gray-800' : 'border-gray-300 hover:border-primary hover:bg-gray-50')
         }
+        ${darkMode ? 'bg-gray-900' : ''}
       `}
     >
       <input {...getInputProps()} />
       <div className="text-center">
         <Upload 
           size={24} 
-          className={`mx-auto mb-2 ${isDragActive ? 'text-primary' : 'text-gray-400'}`}
+          className={`mx-auto mb-2 ${isDragActive ? 'text-primary' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
         />
-        <p className="text-xs text-gray-600">
+        <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           {isDragActive 
             ? 'Drop files here...' 
             : 'Drag & drop files or click to browse'
           }
         </p>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
           PDF, Word, Excel files
         </p>
       </div>

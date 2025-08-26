@@ -17,6 +17,7 @@ interface ProjectPanelProps {
   onProjectDelete: (projectId: string) => void;
   onFileUpload: (files: File[], projectId: string) => void;
   fetchProjects: () => void;
+  darkMode: boolean;
 }
 
 const ProjectPanel: React.FC<ProjectPanelProps> = ({
@@ -27,7 +28,8 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
   onProjectCreate,
   onProjectDelete,
   onFileUpload,
-  fetchProjects
+  fetchProjects,
+  darkMode
 }) => {
 
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -60,13 +62,12 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
   };
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 h-full flex flex-col">
+    <div className={`w-80 h-full flex flex-col ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-r`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Projects</h2>
-        
+      <div className={`p-4 border-b ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+        <h2 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Projects</h2>
         <Button
-          variant="primary"
+          variant={darkMode ? 'secondary' : 'primary'}
           size="small"
           icon={<Plus size={16} />}
           onClick={() => setIsCreatingProject(true)}
@@ -78,14 +79,14 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
 
       {/* Project Creation Form */}
       {isCreatingProject && (
-        <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className={`p-4 ${darkMode ? 'bg-gray-800 border-gray-800' : 'bg-gray-50 border-gray-200'} border-b`}>
           <input
             type="text"
             placeholder="Project name"
             name="name"
             value={newProject.name}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 font-poppins focus:outline-none focus:border-primary"
+            className={`w-full px-3 py-2 border rounded-md mb-2 font-poppins focus:outline-none ${darkMode ? 'bg-gray-900 border-gray-700 text-white focus:border-primary' : 'border-gray-300 focus:border-primary'}`}
             autoFocus
           />
           <textarea
@@ -93,7 +94,7 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
             name="description"
             value={newProject.description}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 font-poppins resize-none focus:outline-none focus:border-primary"
+            className={`w-full px-3 py-2 border rounded-md mb-2 font-poppins resize-none focus:outline-none ${darkMode ? 'bg-gray-900 border-gray-700 text-white focus:border-primary' : 'border-gray-300 focus:border-primary'}`}
             rows={2}
           />
           <div className="flex space-x-2">
@@ -130,8 +131,8 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
               className={`
                 p-3 rounded-lg cursor-pointer transition-all
                 ${selectedProject?.id === project.id 
-                  ? 'bg-primary bg-opacity-10 border border-primary' 
-                  : 'hover:bg-gray-50 border border-transparent'
+                  ? (darkMode ? 'bg-primary bg-opacity-10 border border-primary' : 'bg-primary bg-opacity-10 border border-primary')
+                  : (darkMode ? 'hover:bg-gray-800 border border-transparent' : 'hover:bg-gray-50 border border-transparent')
                 }
               `}
             >
@@ -139,24 +140,24 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
                 <div className="flex items-center space-x-2">
                   <Folder 
                     size={18} 
-                    className={selectedProject?.id === project.id ? 'text-primary' : 'text-gray-500'} 
+                    className={selectedProject?.id === project.id ? 'text-primary' : (darkMode ? 'text-gray-400' : 'text-gray-500')} 
                   />
-                  <span className="font-medium text-gray-800">{project.name}</span>
+                  <span className={`font-medium ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{project.name}</span>
                 </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent project selection when deleting
                     onProjectDelete(project.id);
                   }}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  className={`transition-colors ${darkMode ? 'text-gray-500 hover:text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
               {project.description && (
-                <p className="text-xs text-gray-500 mt-1 ml-6">{project.description}</p>
+                <p className={`text-xs mt-1 ml-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{project.description}</p>
               )}
-              <p className="text-xs text-gray-400 mt-1 ml-6">
+              <p className={`text-xs mt-1 ml-6 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                 {project.file_count} file{project.file_count !== 1 ? 's' : ''}
               </p>
             </div>
@@ -166,36 +167,35 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
         {/* Empty state */}
         {projects.length === 0 && (
           <div className="text-center py-8">
-            <Folder size={48} className="text-gray-300 mx-auto mb-2" />
-            <p className="text-gray-500 text-sm">No projects yet</p>
-            <p className="text-gray-400 text-xs mt-1">Create your first project to get started</p>
+            <Folder size={48} className={`mx-auto mb-2 ${darkMode ? 'text-gray-700' : 'text-gray-300'}`} />
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No projects yet</p>
+            <p className={`text-xs mt-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>Create your first project to get started</p>
           </div>
         )}
       </div>
 
       {/* File Upload Section - Only show when project is selected */}
       {selectedProject && (
-        <div className="border-t border-gray-200 p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">
+        <div className={`p-4 border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+          <h3 className={`text-sm font-semibold mb-3 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
             Files in {selectedProject.name}
           </h3>
-          
           <FileUploader
             projectId={selectedProject.id}
             onFileUpload={onFileUpload}
+            darkMode={darkMode}
           />
-
           {/* Documents List */}
           {documents.length > 0 && (
             <div className="mt-3 max-h-40 overflow-y-auto">
               {documents.map((doc) => (
                 <div key={doc.id} className="flex items-center space-x-2 py-1">
-                  <FileText size={14} className="text-gray-400" />
-                  <span className="text-xs text-gray-600 truncate flex-1">{doc.filename}</span>
+                  <FileText size={14} className={darkMode ? 'text-gray-600' : 'text-gray-400'} />
+                  <span className={`text-xs truncate flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{doc.filename}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    doc.status === 'ready' ? 'bg-green-100 text-green-600' :
-                    doc.status === 'processing' ? 'bg-yellow-100 text-yellow-600' :
-                    'bg-red-100 text-red-600'
+                    doc.status === 'ready' ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-600') :
+                    doc.status === 'processing' ? (darkMode ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-600') :
+                    (darkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-600')
                   }`}>
                     {doc.status}
                   </span>
@@ -208,6 +208,5 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
     </div>
   );
 };
-
 
 export default ProjectPanel;
