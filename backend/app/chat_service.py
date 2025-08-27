@@ -96,8 +96,8 @@ class ChatService:
         # Configuration
         self.chat_model = settings.openai_model  # Default: gpt-4-turbo-preview
         self.max_context_chunks = 5  # Maximum chunks to include in context
-        self.temperature = 0.7  # Creativity level (0-1)
-        self.max_tokens = 1000  # Maximum response length
+        self.temperature = 0.2  # Creativity level (0-1)
+        self.max_tokens = 2000  # Maximum response length
         
         print(f"[ChatService] Configuration:")
         print(f"  - Chat model: {self.chat_model}")
@@ -206,32 +206,19 @@ class ChatService:
             # Step 1: Build the context from chunks
             context_text = self._build_context(context_chunks)
             
-            # Step 2: Create the system prompt
-            if not system_prompt:
-                system_prompt = self._create_system_prompt()
-            
-            # Step 3: Build the messages for GPT-4
-            messages = [
-                {"role": "system", "content": system_prompt}
-            ]
-            
-            # Add conversation history if provided
-            if conversation_history:
-                for msg in conversation_history[-10:]:  # Last 10 messages for context
-                    messages.append({
-                        "role": msg.get("role", "user"),
-                        "content": msg.get("content", "")
-                    })
-            
-            # Add the context and current query
-            user_message = self._create_user_message(query, context_text, context_chunks)
-            messages.append({"role": "user", "content": user_message})
+            # Step 2: Build the full prompt (system and user) using a single function
+            messages = self._build_prompt(
+                query=query,
+                context=context_text,
+                context_chunks=context_chunks,
+                conversation_history=conversation_history
+            )
             
             # Debug: Show token estimate
             estimated_tokens = sum(len(msg["content"]) / 4 for msg in messages)
             print(f"[ChatService] Estimated input tokens: {estimated_tokens:.0f}")
             
-            # Step 4: Call GPT-4
+            # Step 3: Call GPT-4
             print("[ChatService] Calling GPT-4...")
             start_time = time.time()
             
@@ -279,7 +266,6 @@ class ChatService:
                     'estimated_cost': total_cost
                 }
             }
-            
         except Exception as e:
             print(f"[ChatService] ❌ Response generation error: {e}")
             
@@ -329,57 +315,69 @@ class ChatService:
         
         return "\n---\n".join(context_parts)
     
-    def _create_system_prompt(self) -> str:
+    def _build_prompt(
+        self,
+        query: str,
+        context: str,
+        context_chunks: List[Dict],
+        conversation_history: Optional[List[Dict[str, str]]] = None
+    ) -> list:
         """
-        Create the system prompt for GPT-4.
-        
-        Returns:
-            System prompt string
+        Build the full prompt (system and user) for GPT-4.
+        Returns a list of messages for OpenAI chat completion.
         """
-        prompt = """You are an intelligent assistant with access to a knowledge base of documents. 
-                Your role is to provide accurate, helpful responses based on the context provided from these documents.
+        # Enhanced system prompt for in-depth, RAG-powered answers
+        system_prompt = ("""
+            You are an advanced Retrieval-Augmented Generation (RAG) assistant.
+            You have access to a knowledge base of documents and your primary goal is to provide in-depth, comprehensive, and well-structured answers
+            Always use the provided document context to support your responses, and synthesize information from multiple sources when possible.
+            Sometimes you will only have access to partial document context. 
+            When answering questions, if the context is incomplete, try to reason based on the available data and provide a structured response.
+            If key parts of the information are missing, acknowledge the limitation and suggest what is required to complete the answer.
+            Always focus on providing the most accurate response based on the context you have, and do not hesitate to clarify when something is unavailable.
 
-                Guidelines:
-                1. Base your answers primarily on the provided context from the documents
-                2. If the context doesn't contain enough information, say so clearly
-                3. Be concise but thorough in your responses
-                4. If you reference specific information, mention which source it came from
-                5. If asked about something not in the context, acknowledge this limitation
-                6. Maintain a professional and helpful tone
-                7. Use formatting (bullet points, numbered lists) when appropriate for clarity
+            Guidelines:
+            1. Analyze the user's question deeply and provide a thorough, multi-paragraph answer.
+            2. Integrate and synthesize information from all relevant context chunks, not just the most relevant one.
+            3. When possible, break down your answer into sections or steps, using headings, bullet points, or numbered lists for clarity.
+            4. Clearly cite which document/source each key point comes from (e.g., [Source 1], [Source 2]).
+            5. If the context is insufficient, explain what is missing and suggest what information would be needed.
+            6. Maintain a professional, detailed, and helpful tone. Go beyond surface-level answers.
+            7. If the user asks for a summary, provide a detailed summary. If they ask for an explanation, provide a step-by-step explanation.
+            8. Never fabricate information. Only use what is present in the provided context.
+            9. If multiple perspectives or conflicting information exist in the context, present them clearly.
+            10. Use markdown formatting for clarity (e.g., **bold**, _italic_, lists, headings).
+            11. Do not give any Hypothetical responses always make sure the response is comming from the entire data that is provided.
+            12. If asked to perform a task, do the task yourself rather than tellings how to do th task.
+            Remember: Your responses should be as in-depth and insightful as possible, leveraging all available context."""
+        )
 
-                Remember: Your knowledge comes from the provided document context, not from general training data."""
+        # # User message with context
+        # if context_chunks and any(chunk.get('score', 0) > 0.7 for chunk in context_chunks):
+        #     relevance_note = "I found relevant information in your documents:"
+        # else:
+        #     relevance_note = "I found some potentially related information, though it may not directly answer your question:"
 
-        return prompt
-                    
-    def _create_user_message(self, query: str, context: str, chunks: List[Dict]) -> str:
-        """
-        Create the user message with context for GPT-4.
-        
-        Args:
-            query: The user's question
-            context: Formatted context string
-            chunks: List of chunk dictionaries (for metadata)
-            
-        Returns:
-            Formatted user message
-        """
-        # Check if we have relevant context
-        if chunks and any(chunk.get('score', 0) > 0.7 for chunk in chunks):
-            relevance_note = "I found relevant information in your documents:"
-        else:
-            relevance_note = "I found some potentially related information, though it may not directly answer your question:"
-        
-        return f"""Context from documents:
-{relevance_note}
+        user_message = (
+            f"Context from documents:\n"
+            # f"{relevance_note}\n\n"
+            f"{context}\n\n"
+            "---\n\n"
+            f"User Question: {query}\n\n"
+            "Please provide an in-depth, comprehensive answer based strictly on the context above. "
+            "Synthesize information from all sources, cite them, and structure your answer for maximum clarity and depth. "
+            "If the context is insufficient, explain what is missing."
+        )
 
-{context}
-
----
-
-User Question: {query}
-
-Please provide a comprehensive answer based on the context above. If the context doesn't fully answer the question, acknowledge what information is missing."""
+        messages = [{"role": "system", "content": system_prompt}]
+        if conversation_history:
+            for msg in conversation_history[-10:]:
+                messages.append({
+                    "role": msg.get("role", "user"),
+                    "content": msg.get("content", "")
+                })
+        messages.append({"role": "user", "content": user_message})
+        return messages
     
     def _extract_sources(self, chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
