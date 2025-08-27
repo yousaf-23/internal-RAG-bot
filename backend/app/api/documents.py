@@ -436,28 +436,29 @@ async def upload_document(
         
         print(f"[Documents API] ✅ Document record created in database")
         
-        # Step 7: Start background processing
-        # This allows the API to return immediately while processing happens
-        background_tasks.add_task(
-            process_document_background,
+        # Step 7: Process the document synchronously (wait for completion)
+        await process_document_background(
             document_id,
             str(file_path),
             db
         )
         
-        print(f"[Documents API] ✅ Background processing initiated")
+        print(f"[Documents API] ✅ Document processing completed")
         
-        # Step 8: Return response
+        # Step 8: Return response (fetch updated document info)
+        updated_document = db.query(DocumentModel).filter(
+            DocumentModel.id == document_id
+        ).first()
         return DocumentResponse(
-            id=new_document.id,
-            project_id=new_document.project_id,
-            filename=new_document.filename,
-            file_type=new_document.file_type,
-            uploaded_at=new_document.uploaded_at,
-            size=new_document.size,
-            status=new_document.status,
-            page_count=None,  # Will be updated during processing
-            error_message=None
+            id=updated_document.id,
+            project_id=updated_document.project_id,
+            filename=updated_document.filename,
+            file_type=updated_document.file_type,
+            uploaded_at=updated_document.uploaded_at,
+            size=updated_document.size,
+            status=updated_document.status,
+            page_count=updated_document.page_count,
+            error_message=updated_document.error_message
         )
         
     except HTTPException:

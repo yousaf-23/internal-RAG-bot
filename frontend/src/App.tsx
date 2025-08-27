@@ -112,11 +112,11 @@ function App() {
   }, [selectedProject]);
 
   // Handle file upload
-  const handleFileUpload = useCallback((files: File[], projectId: string) => {
-
+  const handleFileUpload = useCallback(async (files: File[], projectId: string) => {
+    // Set status to 'processing' immediately for UI feedback
     const newDocuments: Document[] = files.map(file => ({
       id: `doc-${Date.now()}-${Math.random()}`,
-      projectId:projectId,
+      projectId: projectId,
       filename: file.name,
       fileType: file.name.split('.').pop()?.toLowerCase() as Document['fileType'],
       uploadedAt: new Date().toISOString(),
@@ -124,37 +124,35 @@ function App() {
       status: 'processing'
     }));
 
+    setDocuments(prev => [...prev, ...newDocuments]);
+
     const formData = new FormData();
-    formData.append('file', files[0]); // Append the file
-    formData.append('projectId', projectId); // Add other metadata
+    formData.append('file', files[0]);
+    formData.append('projectId', projectId);
     formData.append('filename', files[0].name);
     formData.append('fileType', files[0].name.split('.').pop()?.toLowerCase() || 'unknown');
     formData.append('size', files[0].size.toString());
     formData.append('uploadedAt', new Date().toISOString());
     formData.append('status', 'processing');
 
-    const response = uploadDocumentQuery({ projectId,formData});
-    if (!response) {    
-      console.error('Failed to upload documents');
-      return;
-    }
-    setDocuments(prev => [...prev, ...newDocuments]);
-    
-    // Update project file count
-    setProjects(prev => prev.map(p => 
-      p.id === projectId 
-        ? { ...p, file_count: p.file_count + files.length, updatedAt: new Date().toISOString() }
-        : p
-    ));
+    try {
+      const response = await uploadDocumentQuery({ projectId, formData });
+      if (!response) {
+        console.error('Failed to upload documents');
+        return;
+      }
+      // After upload completes, fetch the latest documents from backend
+      await fetchProjectDocuments(projectId);
 
-    // Simulate processing (in production, this would be an API call)
-    setTimeout(() => {
-      setDocuments(prev => prev.map(doc => 
-        newDocuments.find(d => d.id === doc.id)
-          ? { ...doc, status: 'ready' as const }
-          : doc
+      // Update project file count
+      setProjects(prev => prev.map(p =>
+        p.id === projectId
+          ? { ...p, file_count: p.file_count + files.length, updatedAt: new Date().toISOString() }
+          : p
       ));
-    }, 2000);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+    }
   }, []);
 
   // Handle sending a message
