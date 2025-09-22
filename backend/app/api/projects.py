@@ -68,7 +68,7 @@ async def get_all_projects(
             detail=f"Failed to retrieve projects: {str(e)}"
         )
 
-@router.post("/", response_model=ProjectResponse)
+@router.post("", response_model=ProjectResponse)
 async def create_project(
     project_data: ProjectCreate,  # Request body (JSON)
     db: Session = Depends(get_db)
