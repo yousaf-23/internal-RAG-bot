@@ -25,7 +25,7 @@ from app.models import (
 # This groups all project-related endpoints together
 router = APIRouter()
 
-@router.get("/", response_model=List[ProjectResponse])
+@router.get("", response_model=List[ProjectResponse])
 async def get_all_projects(
     db: Session = Depends(get_db)  # Inject database session
 ):
