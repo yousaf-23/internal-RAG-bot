@@ -25,3 +25,15 @@ export async function uploadDocumentQuery({projectId,formData}) {
         throw error;
     }
 }
+
+
+export async function deleteDocument(documentId) {
+    try {
+        const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/documents/${documentId}`);
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error deleting document:', error);
+        throw error;
+    }
+}

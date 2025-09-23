@@ -8,9 +8,8 @@ import ChatPanel from './components/ChatPanel/ChatPanel';
 import SourcePanel from './components/SourcePanel/SourcePanel';
 import { Project, Document, ChatMessage, Source } from './types';
 import { getProjectsQuery, DeleteProjects } from './services/useProjects';
-import { getProjectDocumentsQuery , uploadDocumentQuery } from './services/useProjectDocuments';
+import { getProjectDocumentsQuery , uploadDocumentQuery , deleteDocument } from './services/useProjectDocuments';
 import { getChatHistory } from './services/useChat';
-
 function App() {
   // Global application state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -58,6 +57,7 @@ function App() {
       } 
     }
 
+    
     const fetchChatHistory = async (projectId: string) => {
       try {
         const response = await getChatHistory({ project_id: projectId });
@@ -179,6 +179,13 @@ function App() {
 
   const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
 
+  const handleDeleteDocument = async (documentId: string , projectId:string) => {  
+    const response = await deleteDocument(documentId);
+    if (response.success) {
+      fetchProjectDocuments(projectId); // Refresh projects to reflect document deletion
+      fetchProjects();
+    }
+  };
   return (
     <div className={darkMode ? 'bg-gray-900 text-white min-h-screen' : 'bg-white text-gray-900 min-h-screen'}>
       <div className="flex h-screen">
@@ -193,6 +200,7 @@ function App() {
           onFileUpload={handleFileUpload}
           fetchProjects={fetchProjects}
           darkMode={darkMode}
+          handleDeleteDocument={handleDeleteDocument}
         />
 
         {/* Middle Panel - Chat */}

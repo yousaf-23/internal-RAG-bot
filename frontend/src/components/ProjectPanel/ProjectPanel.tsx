@@ -7,6 +7,7 @@ import { Project, Document } from '../../types';
 import Button from '../common/Button';
 import FileUploader from './FileUploader';
 import { AddProjects, getProjectsQuery } from '../../services/useProjects';
+import { deleteDocument } from '../../services/useProjectDocuments';
 
 interface ProjectPanelProps {
   projects: Project[];
@@ -17,6 +18,7 @@ interface ProjectPanelProps {
   onProjectDelete: (projectId: string) => void;
   onFileUpload: (files: File[], projectId: string) => void;
   fetchProjects: () => void;
+  handleDeleteDocument: (documentId: string , projectId:string) => void;
   darkMode: boolean;
 }
 
@@ -29,6 +31,7 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
   onProjectDelete,
   onFileUpload,
   fetchProjects,
+  handleDeleteDocument,
   darkMode
 }) => {
 
@@ -60,6 +63,8 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
       [name]: value
     }));
   };
+
+
 
   return (
     <div className={`w-80 h-full flex flex-col ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-r`}>
@@ -199,6 +204,15 @@ const ProjectPanel: React.FC<ProjectPanelProps> = ({
                   }`}>
                     {doc.status}
                   </span>
+                    <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent project selection when deleting
+                     handleDeleteDocument(doc.id , selectedProject.id);
+                  }}
+                  className={`transition-colors ${darkMode ? 'text-gray-500 hover:text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                >
+                  <Trash2 size={16} />
+                </button>
                 </div>
               ))}
             </div>
