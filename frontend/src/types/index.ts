@@ -35,11 +35,11 @@ export interface ChatMessage {
 
 // Source reference type - represents a document chunk used in an answer
 export interface Source {
-  documentId: string;            // Which document this chunk came from
-  documentName: string;          // Human-readable document name
-  chunk: string;                 // The actual text excerpt
+  document_id: string;            // Which document this chunk came from
+  filename: string;          // Human-readable document name
+  text: string;                 // The actual text excerpt
   pageNumber?: number;           // Optional page number
-  relevanceScore?: number;       // Optional similarity score (0-1)
+  relevance_score?: number;       // Optional similarity score (0-1)
 }
 
 // API Response wrapper - standardizes backend responses

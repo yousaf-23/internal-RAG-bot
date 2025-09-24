@@ -14,6 +14,7 @@ interface SourcePanelProps {
 
 const SourcePanel: React.FC<SourcePanelProps> = ({ sources, isOpen, onClose, darkMode }) => {
   if (!isOpen) return null;
+console.log("sources in SourcePanel:", sources);
 
   return (
     <div className={`w-96 h-full flex flex-col ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-l`}>
@@ -44,7 +45,7 @@ const SourcePanel: React.FC<SourcePanelProps> = ({ sources, isOpen, onClose, dar
           <div className="space-y-4">
             {sources.map((source, index) => (
               <div 
-                key={`${source.documentId}-${index}`}
+                key={`${source.document_id}-${index}`}
                 className={`rounded-lg p-4 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
               >
                 {/* Document header */}
@@ -52,7 +53,7 @@ const SourcePanel: React.FC<SourcePanelProps> = ({ sources, isOpen, onClose, dar
                   <div className="flex items-center space-x-2">
                     <FileText size={16} className="text-primary" />
                     <h3 className={`font-medium text-sm ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-                      {source.documentName}
+                      {source.filename}
                     </h3>
                   </div>
                   {source.pageNumber && (
@@ -64,20 +65,20 @@ const SourcePanel: React.FC<SourcePanelProps> = ({ sources, isOpen, onClose, dar
                 {/* Content chunk */}
                 <div className={`rounded p-3 border ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
                   <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    {source.chunk}
+                    {source.text}
                   </p>
                 </div>
                 {/* Relevance score */}
-                {source.relevanceScore && (
+                {source.relevance_score && (
                   <div className="mt-2">
                     <div className={`flex items-center justify-between text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <span>Relevance</span>
-                      <span>{Math.round(source.relevanceScore * 100)}%</span>
+                      <span>{Math.round(source.relevance_score * 100)}%</span>
                     </div>
                     <div className={`mt-1 h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
                       <div 
                         className="h-full bg-primary transition-all duration-300"
-                        style={{ width: `${source.relevanceScore * 100}%` }}
+                        style={{ width: `${source.relevance_score * 100}%` }}
                       />
                     </div>
                   </div>
