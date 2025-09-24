@@ -38,7 +38,7 @@ except ImportError:
 from app.config import settings
 from app.embeddings_service import EmbeddingsService
 from app.pinecone_service import PineconeService
-from app.database import get_db, Message, Project, Document
+from app.database import get_db, Message, Project, Document, DocumentChunk
 
 # ============================================================================
 # CHAT SERVICE CLASS
@@ -389,6 +389,10 @@ class ChatService:
         Returns:
             List of source information
         """
+
+        # for filename from document_id
+        db = next(get_db())
+        
         sources = []
         seen_docs = set()
         
@@ -396,10 +400,17 @@ class ChatService:
             doc_id = chunk.get('document_id')
             if doc_id and doc_id not in seen_docs:
                 seen_docs.add(doc_id)
+
+                # For filename from document_id
+                doc = db.query(Document).filter(
+                    Document.id == chunks[0].get('document_id')
+                ).first()
+
                 sources.append({
                     'document_id': doc_id,
-                    'filename': chunk.get('metadata', {}).get('filename', 'Unknown'),
+                    'filename': doc.filename if doc else 'Unknown',
                     'chunk_index': chunk.get('chunk_index', 0),
+                    'text': chunk.get('text', ''),  # Preview of text
                     'relevance_score': chunk.get('score', 0)
                 })
         
